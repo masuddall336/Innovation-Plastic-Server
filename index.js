@@ -2,7 +2,7 @@ const express = require('express')
 const app = express()
 const cors = require('cors');
 const port = process.env.PROT || 3000;
-const { MongoClient, ServerApiVersion, Long } = require('mongodb');
+const { MongoClient, ServerApiVersion, Long, ObjectId } = require('mongodb');
 
 app.use(cors())
 app.use(express.json())
@@ -35,6 +35,27 @@ async function run() {
             const ras = await all_products.find().toArray();
             res.send(ras);
         })
+        app.get('/products/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const rasult = await all_products.findOne(query);
+            res.send(rasult)
+        })
+        app.put('/edit-product/:id', async (req, res) => {
+            const id = req.params.id;
+            const updateProduct = req.body;
+
+            const filter = { _id: new ObjectId(id) };
+
+            const updateDoc = {
+                $set: updateProduct
+            };
+
+            const options = { upsert: true };
+
+            const result = await all_products.updateOne(filter, updateDoc, options);
+            res.send(result);
+        });
 
 
 
