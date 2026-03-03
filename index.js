@@ -56,6 +56,12 @@ async function run() {
             const result = await all_products.updateOne(filter, updateDoc, options);
             res.send(result);
         });
+        app.delete('/products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const rasult = await all_products.deleteOne(query);
+            res.send(rasult);
+        })
 
 
 
