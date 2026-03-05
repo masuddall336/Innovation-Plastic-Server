@@ -1,54 +1,60 @@
-const express = require('express')
-const app = express()
-const cors = require('cors');
-const port = process.env.PROT || 3000;
-const { MongoClient, ServerApiVersion, Long, ObjectId } = require('mongodb');
+require("dotenv").config();
 
-app.use(cors())
-app.use(express.json())
+const express = require("express");
+const app = express();
+const cors = require("cors");
 
+const port = process.env.PORT || 3000;
 
-const uri = "mongodb+srv://Innovation-Plastic:RS9bv1QJqnzMhtAD@cluster0.wsjvgaa.mongodb.net/?appName=Cluster0";
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 
-// Create a MongoClient with a MongoClientOptions object to set the Stable API version
+app.use(cors());
+app.use(express.json());
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.wsjvgaa.mongodb.net/Innovation_db?retryWrites=true&w=majority`;
+
 const client = new MongoClient(uri, {
     serverApi: {
         version: ServerApiVersion.v1,
         strict: true,
         deprecationErrors: true,
-    }
+    },
 });
 
 async function run() {
     try {
-        // Connect the client to the server	(optional starting in v4.7)
         await client.connect();
 
-        const all_products = client.db('Innovation_db').collection('product_details');
-        app.post('/products', async (req, res) => {
-            const newPrducts = req.body;
-            console.log(newPrducts);
-            const ras = await all_products.insertOne(newPrducts);
-            res.send(ras)
-        })
-        app.get('/products', async (req, res) => {
-            const ras = await all_products.find().toArray();
-            res.send(ras);
-        })
-        app.get('/products/:id', async (req, res) => {
-            const id = req.params.id
-            const query = { _id: new ObjectId(id) }
-            const rasult = await all_products.findOne(query);
-            res.send(rasult)
-        })
-        app.put('/edit-product/:id', async (req, res) => {
+        const all_products = client
+            .db("Innovation_db")
+            .collection("product_details");
+
+        app.post("/products", async (req, res) => {
+            const newProducts = req.body;
+            const result = await all_products.insertOne(newProducts);
+            res.send(result);
+        });
+
+        app.get("/products", async (req, res) => {
+            const result = await all_products.find().toArray();
+            res.send(result);
+        });
+
+        app.get("/products/:id", async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await all_products.findOne(query);
+            res.send(result);
+        });
+
+        app.put("/edit-product/:id", async (req, res) => {
             const id = req.params.id;
             const updateProduct = req.body;
 
             const filter = { _id: new ObjectId(id) };
 
             const updateDoc = {
-                $set: updateProduct
+                $set: updateProduct,
             };
 
             const options = { upsert: true };
@@ -56,34 +62,27 @@ async function run() {
             const result = await all_products.updateOne(filter, updateDoc, options);
             res.send(result);
         });
-        app.delete('/products/:id', async (req, res) => {
+
+        app.delete("/products/:id", async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
-            const rasult = await all_products.deleteOne(query);
-            res.send(rasult);
-        })
 
+            const result = await all_products.deleteOne(query);
+            res.send(result);
+        });
 
-
-        // Send a ping to confirm a successful connection
         await client.db("admin").command({ ping: 1 });
-        console.log("Pinged your deployment. You successfully connected to MongoDB!");
+        console.log("✅ Connected to MongoDB");
     } finally {
-        // Ensures that the client will close when you finish/error
-        // await client.close();
     }
 }
+
 run().catch(console.dir);
 
-
-app.get('/', (req, res) => {
-    res.send('Started Innovation Server')
-})
+app.get("/", (req, res) => {
+    res.send("Started Innovation Server");
+});
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
-})
-
-
-// Innovation-Plastic
-// RS9bv1QJqnzMhtAD
+    console.log(`Example app listening on port ${port}`);
+});
