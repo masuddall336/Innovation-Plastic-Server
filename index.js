@@ -1,11 +1,15 @@
 
-require('dotenv').config(); // Load environment variables
 const express = require('express');
+require('dotenv').config(); // Load environment variables
 const cors = require('cors');
 const { MongoClient, ObjectId } = require('mongodb');
 
 const app = express();
-app.use(cors());
+const corsOptions = {
+  origin: 'https://www.innovation-plastic.com', // your actual domain
+  credentials: true,
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // MongoDB connection
